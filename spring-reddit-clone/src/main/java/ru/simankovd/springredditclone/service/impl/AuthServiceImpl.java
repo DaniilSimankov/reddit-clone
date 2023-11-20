@@ -11,8 +11,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.simankovd.springredditclone.dto.AuthenticationToken;
+import ru.simankovd.springredditclone.dto.AuthenticationResponse;
 import ru.simankovd.springredditclone.dto.LoginRequest;
+import ru.simankovd.springredditclone.dto.RefreshTokenRequest;
 import ru.simankovd.springredditclone.dto.RegisterRequest;
 import ru.simankovd.springredditclone.exception.SpringRedditException;
 import ru.simankovd.springredditclone.model.User;
@@ -22,6 +23,7 @@ import ru.simankovd.springredditclone.repository.VerificationTokenRepository;
 import ru.simankovd.springredditclone.security.JwtProvider;
 import ru.simankovd.springredditclone.service.AuthService;
 import ru.simankovd.springredditclone.service.MailService;
+import ru.simankovd.springredditclone.service.RefreshTokenService;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -36,6 +38,7 @@ public class AuthServiceImpl implements AuthService {
     private final MailService mailService;
     private final AuthenticationManager authenticationManager;
     private final JwtProvider jwtProvider;
+    private final RefreshTokenService refreshTokenService;
 
     @Transactional
     @Override
@@ -69,7 +72,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public AuthenticationToken login(LoginRequest loginRequest) {
+    public AuthenticationResponse login(LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
                 loginRequest.getPassword()));
 
@@ -77,7 +80,12 @@ public class AuthServiceImpl implements AuthService {
 
         String token = jwtProvider.generateToken(authentication);
 
-        return new AuthenticationToken(token, loginRequest.getUsername());
+//        return new AuthenticationToken(token, loginRequest.getUsername());
+        return AuthenticationResponse.builder()
+                .authenticationToken(token)
+                .refreshToken(refreshTokenService.generateRefreshToken().getToken())
+                .expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
+                .build();
     }
 
     @Override
@@ -115,5 +123,20 @@ public class AuthServiceImpl implements AuthService {
 
         verificationTokenRepository.save(verificationToken);
         return token;
+    }
+
+    @Override
+    public AuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
+        // throw Exception if not valid
+        refreshTokenService.validateRefreshToken(refreshTokenRequest.getRefreshToken());
+
+        String token = jwtProvider.generateToken(refreshTokenRequest.getUsername());
+
+        return AuthenticationResponse.builder()
+                .authenticationToken(token)
+                .refreshToken(refreshTokenRequest.getRefreshToken())
+                .expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
+                .username(refreshTokenRequest.getUsername())
+                .build();
     }
 }
