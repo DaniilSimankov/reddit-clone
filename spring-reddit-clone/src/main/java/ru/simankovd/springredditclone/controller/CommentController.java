@@ -12,7 +12,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 
 @RestController
-@RequestMapping("/api/comment")
+@RequestMapping("/api/comments")
 @AllArgsConstructor
 public class CommentController {
 
@@ -24,14 +24,14 @@ public class CommentController {
         return new ResponseEntity<>(CREATED);
     }
 
-    @GetMapping(params = "postId")
-    public ResponseEntity<List<CommentsDto>> getAllCommentsForPost(@RequestParam Long postId){
+    @GetMapping("/by-post/{postId}")
+    public ResponseEntity<List<CommentsDto>> getAllCommentsForPost(@PathVariable Long postId){
         return ResponseEntity.status(OK)
                 .body(commentService.getAllCommentsForPost(postId));
     }
 
-    @GetMapping(params = "userName")
-    public ResponseEntity<List<CommentsDto>> getAllCommentsForUser(@RequestParam String userName){
+    @GetMapping("/by-user/{username}")
+    public ResponseEntity<List<CommentsDto>> getAllCommentsForUser(@PathVariable("username") String userName){
         return ResponseEntity.status(OK)
                 .body(commentService.getAllCommentsForUser(userName));
     }

@@ -48,7 +48,7 @@ public class AuthServiceImpl implements AuthService {
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .created(Instant.now())
-                .enabled(false)
+                .enabled(true)
                 .build();
 
         userRepository.save(user);
@@ -83,6 +83,7 @@ public class AuthServiceImpl implements AuthService {
 //        return new AuthenticationToken(token, loginRequest.getUsername());
         return AuthenticationResponse.builder()
                 .authenticationToken(token)
+                .username(loginRequest.getUsername())
                 .refreshToken(refreshTokenService.generateRefreshToken().getToken())
                 .expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
                 .build();

@@ -11,7 +11,7 @@ import ru.simankovd.springredditclone.dto.VoteDto;
 import ru.simankovd.springredditclone.service.VoteService;
 
 @RestController
-@RequestMapping("/api/votes/")
+@RequestMapping("/api/votes")
 @AllArgsConstructor
 public class VoteController {
 
