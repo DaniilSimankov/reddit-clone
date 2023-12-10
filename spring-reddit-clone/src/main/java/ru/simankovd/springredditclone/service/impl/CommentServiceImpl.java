@@ -73,8 +73,9 @@ public class CommentServiceImpl implements CommentService {
                 .toList();
     }
 
+    @Override
     public boolean containsBadWords(String comment) {
-        if (comment.equals("shit")) {
+        if (comment.contains("shit")) {
             throw new SpringRedditException("Comments contains unacceptable language");
         }
 

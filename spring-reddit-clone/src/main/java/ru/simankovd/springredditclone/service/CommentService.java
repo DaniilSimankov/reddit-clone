@@ -10,4 +10,6 @@ public interface CommentService {
     List<CommentsDto> getAllCommentsForPost(Long postId);
 
     List<CommentsDto> getAllCommentsForUser(String userName);
+
+    boolean containsBadWords(String comment);
 }
